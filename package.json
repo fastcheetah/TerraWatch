@@ -1,0 +1,14 @@
+{
+  "name": "terra-watch-wildfire-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MapLibre + Chart.js wildfire explorer with a pluggable REST/PostGIS data source",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=22" },
+  "optionalDependencies": { "pg": "^8.16.3" }
+}

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1524" />
+  <title>TerraWatch — Wildfire Intelligence</title>
+  <meta name="description" content="Interactive wildfire detections, maps and country analytics." />
+  <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="module" src="/js/main.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#explore" aria-label="TerraWatch home">
+      <span class="brand-symbol" aria-hidden="true">✺</span>
+      <span><strong>terra<span class="brand-color">watch</span></strong><small>CLIMATE INTELLIGENCE</small></span>
+    </a>
+    <nav class="navlinks" aria-label="Main navigation">
+      <a href="#explore" class="active">Explore</a><a href="#analytics">Analytics</a><a href="#comparison">Compare</a><a href="#about">About data</a>
+    </nav>
+    <div class="header-actions">
+      <div class="select-wrap"><span class="select-icon">⌕</span><label class="sr-only" for="countrySelect">Country</label><select id="countrySelect" aria-label="Country"><option value="AGO">Angola</option></select></div>
+      <div class="select-wrap date-header"><span class="select-icon">▦</span><label class="sr-only" for="rangeSelect">Date range</label><select id="rangeSelect"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="custom">Custom range</option></select></div>
+      <button id="downloadBtn" class="icon-btn" title="Download filtered daily data as CSV" aria-label="Export trend CSV">⇩</button>
+    </div>
+  </header>
+  <main>
+    <section class="explorer-section" id="explore">
+      <div class="section-intro">
+        <div><div class="eyebrow"><span class="signal-dot"></span> EARTH OBSERVATION DASHBOARD <span id="dataBadge" class="demo-tag">DEMO DATA</span></div>
+          <h1>Wildfire <span>Explorer</span></h1><p>Understand patterns in satellite fire detections, one region at a time.</p></div>
+        <div class="last-updated"><span class="pulse"></span><span id="statusText" role="status">Loading observations…</span></div>
+      </div>
+      <div class="workspace">
+        <aside class="panel filters-panel" aria-labelledby="filterTitle">
+          <div class="panel-title"><span class="outlined-icon">☷</span><h2 id="filterTitle">Explore layers</h2></div>
+          <div class="control-section">
+            <label class="control-label" for="satelliteSelect">SATELLITE</label>
+            <select id="satelliteSelect" class="wide-select"><option value="ALL">All satellites</option></select>
+          </div>
+          <div class="control-section">
+            <label class="control-label" for="colorSelect">COLOR DETECTIONS BY</label>
+            <select id="colorSelect" class="wide-select"><option value="confidence">Confidence category</option><option value="satellite">Satellite name</option></select>
+          </div>
+          <div class="control-section" id="customDates" hidden>
+            <label class="control-label" for="dateFrom">CUSTOM PERIOD (UTC)</label>
+            <label class="minor-label" for="dateFrom">From</label><input type="date" id="dateFrom" class="date-input" />
+            <label class="minor-label" for="dateTo">To</label><input type="date" id="dateTo" class="date-input" />
+            <button id="applyDates" class="button subdued full">Apply dates</button>
+          </div>
+          <div class="panel-divider"></div>
+          <div class="control-section">
+            <div class="control-label">AREA SELECTION</div>
+            <p class="control-hint">Pan and zoom to a place, then analyze just the visible area.</p>
+            <button class="button primary full" id="selectViewBtn">▣ &nbsp; Analyze visible map</button>
+            <button class="button subdued full" id="clearViewBtn" disabled>Clear selected area</button>
+            <p class="selection-note" id="selectionNote">Analyzing the whole selected country.</p>
+          </div>
+          <div class="panel-divider"></div>
+          <div class="control-section"><div class="control-label">DETECTION LEGEND</div>
+            <div id="legendItems" class="legend-list"><div><i class="legend-dot red"></i> High confidence</div><div><i class="legend-dot amber"></i> Nominal confidence</div><div><i class="legend-dot lemon"></i> Low confidence</div><div><i class="legend-dot muted"></i> Unknown</div></div>
+          </div>
+          <div class="sidebar-bottom"><span class="tiny-orbit">◎</span> Data displayed here represents <strong>satellite detections</strong>, not confirmed individual wildfires.</div>
+        </aside>
+        <div class="map-shell">
+          <div id="map" role="application" aria-label="Map of wildfire detections"></div>
+          <div class="map-top-label"><span class="map-label-dot"></span><span id="mapCountryLabel">ANGOLA</span><span class="map-label-separator">/</span><span>FIRE DETECTIONS</span></div>
+          <div class="map-controls"><button id="mapHome" title="Reset to selected country" aria-label="Reset map">⌖</button></div>
+          <div class="map-bottom"><span id="mapPointCount">Loading detection points…</span><span>Map: OpenFreeMap / OpenStreetMap</span></div>
+          <div class="map-loading" id="mapLoading" hidden>Refreshing map…</div>
+        </div>
+        <aside class="panel insights-panel">
+          <div class="country-heading"><span class="flag-icon" id="countryFlag">🇦🇴</span><div><h2 id="countryTitle">Angola</h2><p>Satellite fire detections</p></div></div>
+          <div class="snapshot-header">COUNTRY SNAPSHOT <span id="snapshotDates">—</span></div>
+          <div class="metric-card orange"><span class="metric-icon">♨</span><div class="metric-info"><span>Fire detections</span><strong id="statDetections">—</strong><small>Matched observations</small></div></div>
+          <div class="metric-card gold"><span class="metric-icon">◉</span><div class="metric-info"><span>Avg. temperature <small id="temperatureUnit"></small></span><strong id="statTemperature">—</strong><small>Source measurement</small></div></div>
+          <div class="metric-card blue"><span class="metric-icon">◈</span><div class="metric-info"><span>Avg. brightness <small id="brightnessUnit"></small></span><strong id="statBrightness">—</strong><small>Source measurement</small></div></div>
+          <div class="metric-card purple"><span class="metric-icon">◍</span><div class="metric-info"><span>Satellites represented</span><strong id="statSatellites">—</strong><small>Distinct satellite names</small></div></div>
+          <div class="snapshot-foot"><span class="green-ping"></span> Synced with filters <span class="foot-arrow">↗</span></div>
+          <div class="warning-note">Temperature is a dataset field, <strong>not a heatwave indicator</strong>. Heatwave analysis requires a separate meteorological source.</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="analytics-section" id="analytics">
+      <div class="light-intro"><div><span class="section-kicker">BEYOND THE MAP</span><h2>Wildfire <span>analytics</span></h2><p>Explore time trends, satellite coverage, confidence, and measured factors for <strong id="analyticsCountry">Angola</strong>.</p></div><div class="data-period" id="periodLabel">—</div></div>
+      <div class="analytics-grid">
+        <article class="chart-card wide-card"><div class="card-header"><div><div class="chart-eyebrow">ACTIVITY OVER TIME</div><h3>Fire detections by day</h3><p>The number of records within the selected area and period.</p></div><span class="chart-icon fire">↗</span></div><div class="chart-holder"><canvas id="trendChart" aria-label="Daily fire detection line chart"></canvas></div></article>
+        <article class="chart-card"><div class="card-header"><div><div class="chart-eyebrow">DATA SOURCES</div><h3>Detections by satellite</h3><p>Compare instruments' satellite record counts.</p></div><span class="chart-icon blue">◈</span></div><div class="chart-holder"><canvas id="satelliteChart" aria-label="Satellite comparison bar chart"></canvas></div></article>
+        <article class="chart-card"><div class="card-header"><div><div class="chart-eyebrow">MEASUREMENT RELATIONSHIP</div><h3>Temperature vs. brightness</h3><p>Recent matching observations; units come from your source.</p></div><span class="chart-icon gold">⟡</span></div><div class="chart-holder"><canvas id="scatterChart" aria-label="Temperature and brightness scatter plot"></canvas></div></article>
+        <article class="chart-card"><div class="card-header"><div><div class="chart-eyebrow">DETECTION CONFIDENCE</div><h3>Confidence distribution</h3><p>Grouped from the provided confidence field.</p></div><span class="chart-icon purple">◉</span></div><div class="chart-holder"><canvas id="confidenceChart" aria-label="Detection confidence doughnut chart"></canvas></div></article>
+        <article class="chart-card"><div class="card-header"><div><div class="chart-eyebrow">REGIONAL PATTERNS</div><h3>Top reported regions</h3><p>Available only where records include a region name.</p></div><span class="chart-icon green">▤</span></div><div class="region-list" id="regionsList"><p class="empty-state">Waiting for data…</p></div></article>
+      </div>
+    </section>
+
+    <section class="compare-section" id="comparison"><div class="compare-intro"><div><span class="section-kicker">SIDE BY SIDE</span><h2>Compare places &amp; factors</h2><p>Overlay trends for two countries using the same date range and satellite filter.</p></div><div class="compare-filters"><div><label for="compareSelect">COMPARE WITH</label><select id="compareSelect"></select></div><div><label for="metricSelect">FACTOR</label><select id="metricSelect"><option value="count">Fire detections</option><option value="avgTemperature">Average temperature</option><option value="avgBrightness">Average brightness</option></select></div></div></div><article class="chart-card compare-card"><div class="compare-legend"><span><i class="small-swatch orange-swatch"></i><b id="legendAreaA">Angola</b></span><span><i class="small-swatch blue-swatch"></i><b id="legendAreaB">Nigeria</b></span><small id="compareStatus">Same date range</small></div><div class="chart-holder compare-chart"><canvas id="compareChart" aria-label="Comparison of two countries"></canvas></div><p class="compare-note">Detection counts depend on satellite coverage and observation conditions; they are not a direct measure of the number of individual wildfires.</p></article></section>
+
+    <section id="about" class="about-section"><div><span class="section-kicker">TRANSPARENT SCIENCE</span><h2>Know what you're looking at.</h2></div><p>Data points represent potential active-fire detections with time, coordinates, satellite, confidence, temperature, and brightness. The map may show a <strong>capped set of the most recent matching points</strong>, while charts are computed from all records matching your filters. Data in demo mode is synthetic. For scientific interpretation, identify the original sensor, units, processing and quality controls.</p></section>
+  </main>
+  <footer class="footer"><span><span class="brand-color">✺</span> TERRAWATCH <small> · Wildfire intelligence prototype</small></span><span>MapLibre GL JS · Chart.js · OpenFreeMap</span></footer>
+  <div class="toast" id="toast" role="alert" aria-live="polite" hidden></div>
+</body>
+</html>
